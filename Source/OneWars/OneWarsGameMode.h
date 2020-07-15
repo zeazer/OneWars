@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "OneWarsGameMode.generated.h"
+class AOWGrid;
 
 UCLASS(minimalapi)
 class AOneWarsGameMode : public AGameModeBase
@@ -13,6 +14,14 @@ class AOneWarsGameMode : public AGameModeBase
 
 public:
 	AOneWarsGameMode();
+
+	UFUNCTION(BlueprintCallable)
+	AOWGrid* GetGrid();
+
+	UFUNCTION(BlueprintCallable)
+	void SetGrid(AOWGrid* grid);
+private:
+	AOWGrid* mGrid;
 };
 
 

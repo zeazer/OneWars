@@ -11,6 +11,9 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "OneWarsGameMode.h"
+#include "OWGrid.h"
+#include "Engine/GameEngine.h"
 
 AOneWarsCharacter::AOneWarsCharacter()
 {
@@ -44,7 +47,7 @@ AOneWarsCharacter::AOneWarsCharacter()
 	// Create a decal in the world to show the cursor's location
 	CursorToWorld = CreateDefaultSubobject<UDecalComponent>("CursorToWorld");
 	CursorToWorld->SetupAttachment(RootComponent);
-	static ConstructorHelpers::FObjectFinder<UMaterial> DecalMaterialAsset(TEXT("Material'/Game/TopDownCPP/Blueprints/M_Cursor_Decal.M_Cursor_Decal'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> DecalMaterialAsset(TEXT("Material'/Game/OneWars/Player/M_Cursor_Decal.M_Cursor_Decal'"));
 	if (DecalMaterialAsset.Succeeded())
 	{
 		CursorToWorld->SetDecalMaterial(DecalMaterialAsset.Object);
@@ -59,7 +62,7 @@ AOneWarsCharacter::AOneWarsCharacter()
 
 void AOneWarsCharacter::Tick(float DeltaSeconds)
 {
-    Super::Tick(DeltaSeconds);
+	Super::Tick(DeltaSeconds);
 
 	if (CursorToWorld != nullptr)
 	{
@@ -81,10 +84,34 @@ void AOneWarsCharacter::Tick(float DeltaSeconds)
 		{
 			FHitResult TraceHitResult;
 			PC->GetHitResultUnderCursor(ECC_Visibility, true, TraceHitResult);
-			FVector CursorFV = TraceHitResult.ImpactNormal;
-			FRotator CursorR = CursorFV.Rotation();
-			CursorToWorld->SetWorldLocation(TraceHitResult.Location);
-			CursorToWorld->SetWorldRotation(CursorR);
+			auto* grid = Cast<AOneWarsGameMode>(GetWorld()->GetAuthGameMode<AGameModeBase>())->GetGrid();
+			if (TraceHitResult.bBlockingHit)
+			{
+				FVector CursorFV = TraceHitResult.ImpactNormal;
+				FRotator CursorR = CursorFV.Rotation();
+				auto hitLocation = TraceHitResult.Location;
+				CursorToWorld->SetWorldLocation(hitLocation);
+				CursorToWorld->SetWorldRotation(CursorR);
+
+				
+
+				bool isValid = false;
+				int32 row = 0;
+				int32 column = 0;
+				grid->LocationToTile(hitLocation, isValid, row, column);
+
+				grid->SetSelectedTile(row, column);
+				GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, FString::Printf (TEXT("Row %d : Column %d"), row, column));
+			}
+			else
+			{
+				grid->SetSelectedTile(-1, -1);
+			}
+
 		}
 	}
+}
+
+void AOneWarsCharacter::UpdateCursorPosition()
+{
 }
