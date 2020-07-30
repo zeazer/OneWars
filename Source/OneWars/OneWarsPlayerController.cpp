@@ -6,6 +6,8 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "OneWarsCharacter.h"
 #include "Engine/World.h"
+#include "OneWarsGameMode.h"
+#include "OWGrid.h"
 
 AOneWarsPlayerController::AOneWarsPlayerController()
 {
@@ -79,8 +81,21 @@ void AOneWarsPlayerController::MoveToTouchLocation(const ETouchIndex::Type Finge
 	GetHitResultAtScreenPosition(ScreenSpaceLocation, CurrentClickTraceChannel, true, HitResult);
 	if (HitResult.bBlockingHit)
 	{
+		auto location = HitResult.ImpactPoint;
+
+		auto* grid = Cast<AOneWarsGameMode>(GetWorld()->GetAuthGameMode<AGameModeBase>())->GetGrid();
+
+		bool isValid = false;
+		int32 row = -1;
+		int32 column = -1;
+		grid->LocationToTile(location, isValid, row, column);
 		// We hit something, move there
-		SetNewMoveDestination(HitResult.ImpactPoint);
+		if (isValid)
+		{
+			FVector2D centerLocation = FVector2D::ZeroVector;
+			grid->TileToGridLocation(row, column, true, isValid, centerLocation);
+			SetNewMoveDestination({ centerLocation.X, centerLocation.Y, location.Z });
+		}
 	}
 }
 

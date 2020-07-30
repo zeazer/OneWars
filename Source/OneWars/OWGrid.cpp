@@ -65,12 +65,12 @@ void AOWGrid::LocationToTile(const FVector& worldLocation, bool& isValid, int32&
 	float worldPosX = worldLocation.X;
 	float gridPosX = GetActorLocation().X;
 
-	row = FMath::FloorToInt((worldPosX - gridPosX) / GetGridWitdh() * mNumberOfRows);
+	row = FMath::FloorToInt((worldPosX - gridPosX) / GetGridHeight() * mNumberOfRows);
 
 	float worldPosY = worldLocation.Y;
 	float gridPosY = GetActorLocation().Y;
 
-	column = FMath::FloorToInt((worldPosY - gridPosY) / GetGridHeight() * mNumberOfColumns);
+	column = FMath::FloorToInt((worldPosY - gridPosY) / GetGridWitdh() * mNumberOfColumns);
 
 	isValid = IsTileValid(row, column);
 }
@@ -156,12 +156,12 @@ void AOWGrid::CreateLine(const FVector& startPosition, const FVector& endPositio
 
 float AOWGrid::GetGridWitdh() const
 {
-	return mNumberOfRows * mTileSize;
+	return mNumberOfColumns * mTileSize;
 }
 
 float AOWGrid::GetGridHeight() const
 {
-	return mNumberOfColumns * mTileSize;
+	return mNumberOfRows * mTileSize;
 }
 
 UMaterialInstanceDynamic* AOWGrid::CreateMaterialInstance(const FColor& color, float opacity)
@@ -187,6 +187,8 @@ void AOWGrid::UpdateMesh()
 
 void AOWGrid::CreateGridMesh()
 {
+	mLineVertices.Empty();
+	mLineTriangles.Empty();
 	mLineMaterial = CreateMaterialInstance(mLineColor, mLineOpacity);
 	CreateVerticalLines();
 	CreateHorizontalLines();
@@ -197,6 +199,8 @@ void AOWGrid::CreateGridMesh()
 
 void AOWGrid::CreateSelectionMesh()
 {
+	mSelectionVertices.Empty();
+	mSelectionTriangles.Empty();
 	mSelectedMaterial = CreateMaterialInstance(mSelectionColor, mSelectionOpacity);
 	auto halfTile = mTileSize / 2;
 	CreateLine(FVector(0.f, halfTile, 0.f), FVector(mTileSize, halfTile, 0.f), mTileSize, mSelectionVertices, mSelectionTriangles);
