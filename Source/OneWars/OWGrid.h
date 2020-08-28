@@ -33,7 +33,13 @@ protected:
 
 	void CreateHorizontalLines();
 
+	void CreateHexagonGrid();
+
 	void CreateLine(const FVector& startPosition, const FVector& endPosition, float thickness, TArray<FVector>& vertices, TArray<int32>& triangles);
+
+	void CreateForm(const FVector& centerPosition, int32 size, float thickness, TArray<FVector>& vertices, TArray<int32>& triangles);
+
+	void CreateFilledHex(const FVector& centerPosition, int32 size, float thickness, TArray<FVector>& vertices, TArray<int32>& triangles);
 
 	float GetGridWitdh() const;
 
@@ -88,8 +94,8 @@ private:
 
 	UMaterialInstanceDynamic* mSelectedMaterial;
 
-	TArray<FVector> mLineVertices;
-	TArray<int32> mLineTriangles;
+	TArray<FVector> mGridVertices;
+	TArray<int32> mGridTriangles;
 
 	TArray<FVector> mSelectionVertices;
 	TArray<int32> mSelectionTriangles;

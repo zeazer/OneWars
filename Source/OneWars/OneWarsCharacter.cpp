@@ -13,7 +13,6 @@
 #include "Engine/World.h"
 #include "OneWarsGameMode.h"
 #include "OWGrid.h"
-#include "Engine/GameEngine.h"
 
 AOneWarsCharacter::AOneWarsCharacter()
 {
@@ -101,7 +100,8 @@ void AOneWarsCharacter::Tick(float DeltaSeconds)
 				grid->LocationToTile(hitLocation, isValid, row, column);
 
 				grid->SetSelectedTile(row, column);
-				GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, FString::Printf (TEXT("Row %d : Column %d"), row, column));
+
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Row: %d Column: %d"), row, column));
 			}
 			else
 			{

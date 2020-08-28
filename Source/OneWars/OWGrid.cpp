@@ -7,6 +7,7 @@
 #include "ProceduralMeshComponent.h"
 #include "OneWarsGameMode.h"
 #include "Engine/GameEngine.h"
+#include "Math/UnrealMathVectorConstants.h"
 
 // Sets default values
 AOWGrid::AOWGrid()
@@ -69,6 +70,7 @@ void AOWGrid::LocationToTile(const FVector& worldLocation, bool& isValid, int32&
 
 	float worldPosY = worldLocation.Y;
 	float gridPosY = GetActorLocation().Y;
+	
 
 	column = FMath::FloorToInt((worldPosY - gridPosY) / GetGridWitdh() * mNumberOfColumns);
 
@@ -80,11 +82,9 @@ void AOWGrid::TileToGridLocation(int32 row, int32 column, bool isCenter, bool& i
 	isValid = IsTileValid(row, column);
 	auto actorLocation = GetActorLocation();
 
-	float offset = isCenter ? mTileSize / 2 : 0;
+	float x = (row * mTileSize * sqrt(3)) + actorLocation.X;
 
-	float x = (row * mTileSize) + actorLocation.X + offset;
-
-	float y = (column * mTileSize) + actorLocation.Y + offset;
+	float y = (column * ((mTileSize*2)*(3/4))) + actorLocation.Y;
 
 	gridLcoation.X = x;
 	gridLcoation.Y = y;
@@ -106,7 +106,7 @@ void AOWGrid::SetSelectedTile(int32 row, int32 column)
 	}
 	else
 	{
-		mSelectionMesh->SetVisibility(false);
+		mSelectionMesh->SetVisibility(true);
 	}
 }
 
@@ -116,7 +116,7 @@ void AOWGrid::CreateVerticalLines()
 	for (int32 i = 0; i < mNumberOfColumns + 1; i++)
 	{
 		auto lineStart = i * mTileSize;
-		CreateLine(FVector(0.f, lineStart, 0.f), FVector(lineEnd, lineStart, 0.f), mLineThickness, mLineVertices, mLineTriangles);
+		CreateLine(FVector(0.f, lineStart, 0.f), FVector(lineEnd, lineStart, 0.f), mLineThickness, mGridVertices, mGridTriangles);
 	}
 }
 
@@ -126,7 +126,20 @@ void AOWGrid::CreateHorizontalLines()
 	for (int32 i = 0; i < mNumberOfRows + 1; i++)
 	{
 		auto lineStart = i * mTileSize;
-		CreateLine(FVector(lineStart, 0.f, 0.f), FVector(lineStart, lineEnd, 0.f), mLineThickness, mLineVertices, mLineTriangles);
+		CreateLine(FVector(lineStart, 0.f, 0.f), FVector(lineStart, lineEnd, 0.f), mLineThickness, mGridVertices, mGridTriangles);
+	}
+}
+
+void AOWGrid::CreateHexagonGrid()
+{
+	int32 width = mTileSize * sqrt(3);
+	int32 height = mTileSize * 2;
+	for (int32 x = 0; x < mNumberOfColumns; x++)
+	{
+		for (int32 y = 0; y < mNumberOfRows; y++)
+		{
+			CreateForm(FVector(x * width + (0.5 * width * (y % 2)), y * height * 0.75f, 0), mTileSize, mLineThickness, mGridVertices, mGridTriangles);
+		}
 	}
 }
 
@@ -142,7 +155,7 @@ void AOWGrid::CreateLine(const FVector& startPosition, const FVector& endPositio
 	auto topLeft = lenght;
 	auto bottomRight = lenght + 3;
 
-	triangles.Append({ bottomLeft,  topRight ,topLeft , bottomLeft ,bottomRight ,topRight });
+	triangles.Append({ bottomLeft, topRight, topLeft, bottomLeft, bottomRight, topRight });
 
 	auto thicky = thicknessDirection * halfThickness;
 
@@ -152,6 +165,158 @@ void AOWGrid::CreateLine(const FVector& startPosition, const FVector& endPositio
 	auto vertex3 = endPosition - thicky;
 
 	vertices.Append({ vertex0, vertex1, vertex2, vertex3 });
+}
+
+void AOWGrid::CreateForm(const FVector& centerPosition, int32 size, float thickness, TArray<FVector>& vertices, TArray<int32>& triangles)
+{
+	auto firstIndex = vertices.Num();
+
+	int32 current = 0;
+	//A
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 3);
+		triangles.Add(firstIndex + current + 1);
+	}
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 2);
+		triangles.Add(firstIndex + current + 3);
+	}
+	current = 2;
+	//B
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 3);
+		triangles.Add(firstIndex + current + 1);
+	}
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 2);
+		triangles.Add(firstIndex + current + 3);
+	}
+
+	current = 4;
+	//C
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 3);
+		triangles.Add(firstIndex + current + 1);
+	}
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 2);
+		triangles.Add(firstIndex + current + 3);
+	}
+
+	current = 6;
+	//D
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 3);
+		triangles.Add(firstIndex + current + 1);
+	}
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 2);
+		triangles.Add(firstIndex + current + 3);
+	}
+
+	current = 8;
+	//E
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 3);
+		triangles.Add(firstIndex + current + 1);
+	}
+	{
+		triangles.Add(firstIndex + current);
+		triangles.Add(firstIndex + current + 2);
+		triangles.Add(firstIndex + current + 3);
+	}
+
+
+	//F
+	{
+		triangles.Add(firstIndex + 10);
+		triangles.Add(firstIndex + 1);
+		triangles.Add(firstIndex + 11);
+	}
+	{
+		triangles.Add(firstIndex + 10);
+		triangles.Add(firstIndex + 0);
+		triangles.Add(firstIndex + 1);
+	}
+
+
+	int32 sides = 6;
+	int32 outerSize = size;
+	int32 innerSize = size * 0.9f;
+
+	for (int32 i = 0; i < sides; i++)
+	{
+		auto angleDeg = 60 * i - 30;
+		auto angleRad = PI / 180 * angleDeg;
+
+		//Inner Hex vertices
+		FVector innerVertice = { centerPosition.X + innerSize * FMath::Cos(angleRad), centerPosition.Y + innerSize * FMath::Sin(angleRad), centerPosition.Z };
+		vertices.Add(innerVertice);
+
+		//Outer Hex vertices
+		FVector outerVertice = { centerPosition.X + outerSize * FMath::Cos(angleRad), centerPosition.Y + outerSize * FMath::Sin(angleRad), centerPosition.Z };
+		vertices.Add(outerVertice);
+	}
+}
+
+void AOWGrid::CreateFilledHex(const FVector& centerPosition, int32 size, float thickness, TArray<FVector>& vertices, TArray<int32>& triangles)
+{
+	auto firstIndex = vertices.Num();
+
+	{
+		triangles.Add(firstIndex);
+		triangles.Add(firstIndex + 2);
+		triangles.Add(firstIndex + 1);
+	}
+
+	{
+		triangles.Add(firstIndex);
+		triangles.Add(firstIndex + 3);
+		triangles.Add(firstIndex + 2);
+	}
+
+	{
+		triangles.Add(firstIndex);
+		triangles.Add(firstIndex + 4);
+		triangles.Add(firstIndex + 3);
+	}
+
+	{
+		triangles.Add(firstIndex);
+		triangles.Add(firstIndex + 5);
+		triangles.Add(firstIndex + 4);
+	}
+
+	{
+		triangles.Add(firstIndex);
+		triangles.Add(firstIndex + 6);
+		triangles.Add(firstIndex + 5);
+	}
+
+	{
+		triangles.Add(firstIndex);
+		triangles.Add(firstIndex + 1);
+		triangles.Add(firstIndex + 6);
+	}
+
+	int32 sides = 6;
+	vertices.Add(centerPosition);
+	for (int32 i = 0; i < sides; i++)
+	{
+		auto angleDeg = 60 * i - 30;
+		auto angleRad = PI / 180 * angleDeg;
+		FVector outerVertice = { centerPosition.X + size * FMath::Cos(angleRad), centerPosition.Y + size * FMath::Sin(angleRad), centerPosition.Z };
+		vertices.Add(outerVertice);
+	}
 }
 
 float AOWGrid::GetGridWitdh() const
@@ -184,15 +349,13 @@ void AOWGrid::UpdateMesh()
 	}
 }
 
-
 void AOWGrid::CreateGridMesh()
 {
-	mLineVertices.Empty();
-	mLineTriangles.Empty();
+	mGridVertices.Empty();
+	mGridTriangles.Empty();
 	mLineMaterial = CreateMaterialInstance(mLineColor, mLineOpacity);
-	CreateVerticalLines();
-	CreateHorizontalLines();
-	mGridMesh->CreateMeshSection(0, mLineVertices, mLineTriangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FColor>(), TArray<FProcMeshTangent>(), false);
+	CreateHexagonGrid();
+	mGridMesh->CreateMeshSection(0, mGridVertices, mGridTriangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FColor>(), TArray<FProcMeshTangent>(), false);
 
 	mGridMesh->SetMaterial(0, mLineMaterial);
 }
@@ -202,10 +365,9 @@ void AOWGrid::CreateSelectionMesh()
 	mSelectionVertices.Empty();
 	mSelectionTriangles.Empty();
 	mSelectedMaterial = CreateMaterialInstance(mSelectionColor, mSelectionOpacity);
-	auto halfTile = mTileSize / 2;
-	CreateLine(FVector(0.f, halfTile, 0.f), FVector(mTileSize, halfTile, 0.f), mTileSize, mSelectionVertices, mSelectionTriangles);
+	CreateFilledHex(FVector(0.0f, 0.0f, 0.f), mTileSize * 0.9f, mLineThickness, mSelectionVertices, mSelectionTriangles);
 
-	mSelectionMesh->SetVisibility(false);
+	mSelectionMesh->SetVisibility(true);
 	mSelectionMesh->CreateMeshSection(0, mSelectionVertices, mSelectionTriangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FColor>(), TArray<FProcMeshTangent>(), false);
 	mSelectionMesh->SetMaterial(0, mSelectedMaterial);
 }
