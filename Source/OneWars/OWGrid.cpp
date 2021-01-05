@@ -8,6 +8,7 @@
 #include "OneWarsGameMode.h"
 #include "Engine/GameEngine.h"
 #include "Math/UnrealMathVectorConstants.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 // Sets default values
 AOWGrid::AOWGrid()
@@ -32,6 +33,8 @@ AOWGrid::AOWGrid()
 	}
 
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+
+	SetRootComponent(Root);
 
 	mGridMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("GridMesh"));
 	mGridMesh->SetupAttachment(Root);
@@ -66,13 +69,18 @@ void AOWGrid::LocationToTile(const FVector& worldLocation, bool& isValid, int32&
 	float worldPosX = worldLocation.X;
 	float gridPosX = GetActorLocation().X;
 
-	row = FMath::FloorToInt((worldPosX - gridPosX) / GetGridHeight() * mNumberOfRows);
-
 	float worldPosY = worldLocation.Y;
 	float gridPosY = GetActorLocation().Y;
-	
 
-	column = FMath::FloorToInt((worldPosY - gridPosY) / GetGridWitdh() * mNumberOfColumns);
+
+	float halfSize = mTileSize / 2;
+	float width = mNumberOfColumns * mTileSize * sqrt(3);
+	float height = GetGridHeight() * 2 * 0.75f;
+
+	row = 0.f;//FMath::FloorToInt((worldPosY - gridPosY) / height * mNumberOfRows);
+
+	float offsett = (0.5f * mTileSize * sqrt(3) * (FMath::Abs(row) % 2));
+	column = FMath::FloorToInt((worldPosX - gridPosX) / (width + offsett) * mNumberOfColumns);
 
 	isValid = IsTileValid(row, column);
 }
@@ -82,9 +90,13 @@ void AOWGrid::TileToGridLocation(int32 row, int32 column, bool isCenter, bool& i
 	isValid = IsTileValid(row, column);
 	auto actorLocation = GetActorLocation();
 
-	float x = (row * mTileSize * sqrt(3)) + actorLocation.X;
+	float width = column * mTileSize * sqrt(3);
+	float height = row * mTileSize * 2 * 0.75f;
+	float halfSize = mTileSize / 2;
 
-	float y = (column * ((mTileSize*2)*(3/4))) + actorLocation.Y;
+	float y = height + actorLocation.Y + halfSize;
+
+	float x = width + (0.5f * mTileSize * sqrt(3) * (FMath::Abs(row) % 2)) + actorLocation.X + halfSize;
 
 	gridLcoation.X = x;
 	gridLcoation.Y = y;
@@ -132,13 +144,14 @@ void AOWGrid::CreateHorizontalLines()
 
 void AOWGrid::CreateHexagonGrid()
 {
+	float halfTile = mTileSize / 2;
 	int32 width = mTileSize * sqrt(3);
-	int32 height = mTileSize * 2;
+	int32 height = mTileSize * 2 * 0.75f;
 	for (int32 x = 0; x < mNumberOfColumns; x++)
 	{
 		for (int32 y = 0; y < mNumberOfRows; y++)
 		{
-			CreateForm(FVector(x * width + (0.5 * width * (y % 2)), y * height * 0.75f, 0), mTileSize, mLineThickness, mGridVertices, mGridTriangles);
+			CreateForm(FVector(x * width + (0.5 * width * (y % 2) + halfTile), y * height + halfTile, 0), mTileSize, mLineThickness, mGridVertices, mGridTriangles);
 		}
 	}
 }

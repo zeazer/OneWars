@@ -9,6 +9,8 @@ public class OneWarsEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
+		//bUseUnityBuild = false;
+		//bUsePCHFiles = false;
 		ExtraModuleNames.Add("OneWars");
 	}
 }

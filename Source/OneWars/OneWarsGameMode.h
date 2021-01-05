@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "OneWarsGameMode.generated.h"
 class AOWGrid;
+class AOWHexGrid;
 
 UCLASS(minimalapi)
 class AOneWarsGameMode : public AGameModeBase
@@ -20,8 +21,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetGrid(AOWGrid* grid);
+
+	UFUNCTION(BlueprintCallable)
+	AOWHexGrid* GetHexGrid();
+
+	UFUNCTION(BlueprintCallable)
+	void SetHexGrid(AOWHexGrid* grid);
 private:
 	AOWGrid* mGrid;
+	AOWHexGrid* mHexGrid;
 };
 
 

@@ -8,11 +8,21 @@
 #include "Engine/World.h"
 #include "OneWarsGameMode.h"
 #include "OWGrid.h"
+#include "OWHexGrid.h"
+#include "OneWarsGameInstance.h"
+#include "Engine/Engine.h"
+#include "PlayerHUD.h"
 
 AOneWarsPlayerController::AOneWarsPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
+	MyHUD = CreateDefaultSubobject<APlayerHUD>(TEXT("HUD"));
+}
+
+void AOneWarsPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 void AOneWarsPlayerController::PlayerTick(float DeltaTime)
@@ -31,10 +41,10 @@ void AOneWarsPlayerController::SetupInputComponent()
 	// set up gameplay key bindings
 	Super::SetupInputComponent();
 
-	InputComponent->BindAction("SetDestination", IE_Pressed, this, &AOneWarsPlayerController::OnSetDestinationPressed);
-	InputComponent->BindAction("SetDestination", IE_Released, this, &AOneWarsPlayerController::OnSetDestinationReleased);
+	InputComponent->BindAction("SetDestination", IE_Pressed, this, &AOneWarsPlayerController::MoveToMouseCursor);
+	//	InputComponent->BindAction("SetDestination", IE_Released, this, &AOneWarsPlayerController::OnSetDestinationReleased);
 
-	// support touch devices 
+		// support touch devices 
 	InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AOneWarsPlayerController::MoveToTouchLocation);
 	InputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AOneWarsPlayerController::MoveToTouchLocation);
 
@@ -64,10 +74,22 @@ void AOneWarsPlayerController::MoveToMouseCursor()
 		FHitResult Hit;
 		GetHitResultUnderCursor(ECC_Visibility, false, Hit);
 
+		auto location = Hit.ImpactPoint;
+
+		/*auto* grid = Cast<AOneWarsGameMode>(GetWorld()->GetAuthGameMode<AGameModeBase>())->GetHexGrid();*/
+
+
 		if (Hit.bBlockingHit)
 		{
 			// We hit something, move there
-			SetNewMoveDestination(Hit.ImpactPoint);
+			/*if (grid)
+			{
+				FVector centerLocation = grid->GetTilePosition(Hit.Item);
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("Grid Location: %s"), *centerLocation.ToString()));
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Cursor Location: %s"), *location.ToString()));
+			}*/
+			//SetNewMoveDestination({ centerLocation.X, centerLocation.Y, location.Z });
+			SetNewMoveDestination(location);
 		}
 	}
 }
@@ -83,17 +105,16 @@ void AOneWarsPlayerController::MoveToTouchLocation(const ETouchIndex::Type Finge
 	{
 		auto location = HitResult.ImpactPoint;
 
-		auto* grid = Cast<AOneWarsGameMode>(GetWorld()->GetAuthGameMode<AGameModeBase>())->GetGrid();
+		auto* grid = Cast<AOneWarsGameMode>(GetWorld()->GetAuthGameMode<AGameModeBase>())->GetHexGrid();
 
-		bool isValid = false;
+		bool isValid = true;
 		int32 row = -1;
 		int32 column = -1;
-		grid->LocationToTile(location, isValid, row, column);
 		// We hit something, move there
 		if (isValid)
 		{
-			FVector2D centerLocation = FVector2D::ZeroVector;
-			grid->TileToGridLocation(row, column, true, isValid, centerLocation);
+			FVector centerLocation = grid->GetTilePosition(HitResult.Item);
+
 			SetNewMoveDestination({ centerLocation.X, centerLocation.Y, location.Z });
 		}
 	}

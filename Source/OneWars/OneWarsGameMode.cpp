@@ -5,6 +5,7 @@
 #include "OneWarsCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "OWGrid.h"
+#include "OWHexGrid.h"
 
 AOneWarsGameMode::AOneWarsGameMode()
 {
@@ -27,4 +28,14 @@ AOWGrid* AOneWarsGameMode::GetGrid()
 void AOneWarsGameMode::SetGrid(AOWGrid* grid)
 {
 	mGrid = grid;
+}
+
+AOWHexGrid* AOneWarsGameMode::GetHexGrid()
+{
+	return mHexGrid;
+}
+
+void AOneWarsGameMode::SetHexGrid(AOWHexGrid* grid)
+{
+	mHexGrid = grid;
 }

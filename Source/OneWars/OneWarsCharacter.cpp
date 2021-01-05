@@ -13,6 +13,10 @@
 #include "Engine/World.h"
 #include "OneWarsGameMode.h"
 #include "OWGrid.h"
+#include "OwHexGrid.h"
+#include "Components/WidgetComponent.h"
+#include "OneWarsGameInstance.h"
+
 
 AOneWarsCharacter::AOneWarsCharacter()
 {
@@ -35,7 +39,7 @@ AOneWarsCharacter::AOneWarsCharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
 	CameraBoom->TargetArmLength = 800.f;
-	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
+	CameraBoom->SetRelativeRotation(FRotator(-60.f, -90.f, 0.f));
 	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
 	// Create a camera...
@@ -54,9 +58,18 @@ AOneWarsCharacter::AOneWarsCharacter()
 	CursorToWorld->DecalSize = FVector(16.0f, 32.0f, 32.0f);
 	CursorToWorld->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f).Quaternion());
 
-	// Activate ticking in order to update the cursor every frame.
+	// Activate ticking in order to update the cursor every frame.§§
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	mNameplateComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("NameplateComponent"));
+	mNameplateComponent->SetupAttachment(RootComponent);
+
+	mCharacterName = TEXT("Player");
+
+	mLevel = 1;
+
+	mHealth = 1.f;
 }
 
 void AOneWarsCharacter::Tick(float DeltaSeconds)
@@ -83,7 +96,6 @@ void AOneWarsCharacter::Tick(float DeltaSeconds)
 		{
 			FHitResult TraceHitResult;
 			PC->GetHitResultUnderCursor(ECC_Visibility, true, TraceHitResult);
-			auto* grid = Cast<AOneWarsGameMode>(GetWorld()->GetAuthGameMode<AGameModeBase>())->GetGrid();
 			if (TraceHitResult.bBlockingHit)
 			{
 				FVector CursorFV = TraceHitResult.ImpactNormal;
@@ -91,27 +103,51 @@ void AOneWarsCharacter::Tick(float DeltaSeconds)
 				auto hitLocation = TraceHitResult.Location;
 				CursorToWorld->SetWorldLocation(hitLocation);
 				CursorToWorld->SetWorldRotation(CursorR);
-
-				
-
-				bool isValid = false;
-				int32 row = 0;
-				int32 column = 0;
-				grid->LocationToTile(hitLocation, isValid, row, column);
-
-				grid->SetSelectedTile(row, column);
-
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Row: %d Column: %d"), row, column));
-			}
-			else
-			{
-				grid->SetSelectedTile(-1, -1);
 			}
 
 		}
 	}
 }
 
-void AOneWarsCharacter::UpdateCursorPosition()
+void AOneWarsCharacter::OnConstruction(const FTransform& Transform)
 {
+	ConstructNameplate();
+}
+
+void AOneWarsCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (mNameplateComponent)
+	{
+		auto* widget = mNameplateComponent->GetUserWidgetObject();
+		auto* nameplate = Cast<UNameplate>(widget);
+		if (nameplate)
+		{
+			nameplate->mCharacter = this;
+		}
+	}
+}
+
+const FString& AOneWarsCharacter::GetCharacterName()
+{
+	return mCharacterName;
+}
+
+const int32 AOneWarsCharacter::GetLevel()
+{
+	return mLevel;
+}
+
+const float AOneWarsCharacter::GetHealth()
+{
+	return mHealth;
+}
+
+void AOneWarsCharacter::ConstructNameplate()
+{
+	if (NameplateClass)
+	{
+		mNameplateComponent->SetWidgetClass(NameplateClass);
+	}
 }

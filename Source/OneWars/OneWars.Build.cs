@@ -8,6 +8,9 @@ public class OneWars : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NavigationSystem", "AIModule" , "ProceduralMeshComponent" });
+		bEnforceIWYU = true;
+		bEnableExceptions = true;
+
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NavigationSystem", "AIModule" , "ProceduralMeshComponent", "UMG", "OnlineSubsystem", "OnlineSubsystemSteam"});
     }
 }

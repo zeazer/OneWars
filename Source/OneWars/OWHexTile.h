@@ -3,73 +3,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Components/SceneComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "OWHexTile.generated.h"
-class UProceduralMeshComponent;
 
 UCLASS()
-class ONEWARS_API UOWHexTile : public UActorComponent
+class ONEWARS_API UOWHexTile : public UHierarchicalInstancedStaticMeshComponent
 {
 	GENERATED_BODY()
 	
 public:	
 	UOWHexTile();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USceneComponent* Root;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	//UStaticMeshComponent* mTileMesh;
-
-	void GenerateMesh();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (DisplayName = "TileSize"))
-	float mTileSize;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (DisplayName = "LineColor"))
-	FColor mTileColor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (DisplayName = "LineColor"))
-	FColor mBorderColor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (DisplayName = "SelectionColor"))
-	FColor mSelectionColor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (DisplayName = "LineOpacity"))
-	float mTileOpacity;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (DisplayName = "LineOpacity"))
-	float mBorderOpacity;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (DisplayName = "SelectionOpacity"))
-	float mSelectionOpacity;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UProceduralMeshComponent* mTileMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UProceduralMeshComponent* mBorderMesh;
-#pragma region Get/Set
+#pragma region
 	const FVector& GetSize();
-	UProceduralMeshComponent* GetTileMesh();
-	UProceduralMeshComponent* GetBorderMesh();
-	void SetRelativeLocation(const FVector& localLocation);
-	void SetAsSelected(bool selected);
+
+	const FRotator& GetRotation();
 #pragma endregion
 
+	void SetMaterialToDefault();
 private:
-
-	void CreateForm(const FVector& centerPosition, int32 size, TArray<FVector>& vertices, TArray<int32>& triangles);
-
-	void CreateHex();
-
 	UMaterialInstanceDynamic* CreateMaterialInstance(const FColor& color, float opacity);
-
-	TArray<FVector> mTileVertices;
-	TArray<int32> mTileTriangles;
-
-	TArray<FVector> mBorderVertices;
-	TArray<int32> mBorderTriangles;
 
 	UPROPERTY()
 	UMaterialInterface* mMasterMaterial;
@@ -77,12 +33,6 @@ private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* mDefaultMaterial;
 
-	UPROPERTY()
-	UMaterialInstanceDynamic* mBorderMaterial;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* mSelectedMaterial;
-
 	FVector mSize;
-
+	FRotator mRotation;
 };
