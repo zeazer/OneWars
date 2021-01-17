@@ -22,8 +22,14 @@ public:
 
 	virtual void BeginPlay() override;
 
+	void CameraUnlockToggle();
+
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
+
+	/** Returns UnlockedCamera subobject **/
+	FORCEINLINE class UCameraComponent* GetUnlockedCamera() const { return UnlockedCamera; }
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns CursorToWorld subobject **/
@@ -57,6 +63,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* TopDownCameraComponent;
 
+	/** Unlocked camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* UnlockedCamera;
+
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
@@ -72,5 +82,9 @@ private:
 	class UNetworkedChatSystemActor* mChatACtor;*/
 
 	void ConstructNameplate();
+
+	bool mCameraLock;
+
+	bool FlipFloop(bool& toBeFlipped);
 };
 

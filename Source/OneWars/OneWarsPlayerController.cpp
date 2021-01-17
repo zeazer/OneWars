@@ -49,6 +49,8 @@ void AOneWarsPlayerController::SetupInputComponent()
 	InputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AOneWarsPlayerController::MoveToTouchLocation);
 
 	InputComponent->BindAction("ResetVR", IE_Pressed, this, &AOneWarsPlayerController::OnResetVR);
+
+	InputComponent->BindAction("CameraUnlockToggle", IE_Pressed, this, &AOneWarsPlayerController::CameraUnlockToggle);
 }
 
 void AOneWarsPlayerController::OnResetVR()
@@ -145,4 +147,12 @@ void AOneWarsPlayerController::OnSetDestinationReleased()
 {
 	// clear flag to indicate we should stop updating the destination
 	bMoveToMouseCursor = false;
+}
+
+void AOneWarsPlayerController::CameraUnlockToggle()
+{
+	if (AOneWarsCharacter* MyPawn = Cast<AOneWarsCharacter>(GetPawn()))
+	{
+		MyPawn->CameraUnlockToggle();
+	}
 }

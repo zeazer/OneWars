@@ -47,6 +47,11 @@ AOneWarsCharacter::AOneWarsCharacter()
 	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Create unlocked camera.
+	UnlockedCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("UnlockedCamera"));
+	UnlockedCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	UnlockedCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
 	// Create a decal in the world to show the cursor's location
 	CursorToWorld = CreateDefaultSubobject<UDecalComponent>("CursorToWorld");
 	CursorToWorld->SetupAttachment(RootComponent);
@@ -70,6 +75,8 @@ AOneWarsCharacter::AOneWarsCharacter()
 	mLevel = 1;
 
 	mHealth = 1.f;
+
+	mCameraLock = true;
 }
 
 void AOneWarsCharacter::Tick(float DeltaSeconds)
@@ -127,6 +134,24 @@ void AOneWarsCharacter::BeginPlay()
 			nameplate->mCharacter = this;
 		}
 	}
+	if (UnlockedCamera)
+	{
+		UnlockedCamera->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	}
+}
+
+void AOneWarsCharacter::CameraUnlockToggle()
+{
+	static bool cameraUnlock = false;
+	FlipFloop(cameraUnlock);
+	TopDownCameraComponent->SetActive(!cameraUnlock);
+	UnlockedCamera->SetActive(cameraUnlock);
+	if (cameraUnlock)
+	{
+		FVector newLocation = TopDownCameraComponent->GetComponentLocation();
+		UnlockedCamera->SetWorldLocation(newLocation);
+
+	}
 }
 
 const FString& AOneWarsCharacter::GetCharacterName()
@@ -150,4 +175,10 @@ void AOneWarsCharacter::ConstructNameplate()
 	{
 		mNameplateComponent->SetWidgetClass(NameplateClass);
 	}
+}
+
+bool AOneWarsCharacter::FlipFloop(bool& toBeFlipped)
+{
+	toBeFlipped = !toBeFlipped;
+	return toBeFlipped;
 }
