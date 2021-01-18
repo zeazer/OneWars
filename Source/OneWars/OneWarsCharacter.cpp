@@ -16,6 +16,7 @@
 #include "OwHexGrid.h"
 #include "Components/WidgetComponent.h"
 #include "OneWarsGameInstance.h"
+#include "OneWarsPlayerController.h"
 
 
 AOneWarsCharacter::AOneWarsCharacter()
@@ -77,11 +78,22 @@ AOneWarsCharacter::AOneWarsCharacter()
 	mHealth = 1.f;
 
 	mCameraLock = true;
+
+	mScreenScrollPercentage = 0.04f;
+
+	mCameraSpeed = 10.0f;
+
+	mPreviousMouseDirection = FVector::ZeroVector;
 }
 
 void AOneWarsCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (!mCameraLock)
+	{
+		CameraMovement(DeltaSeconds);
+	}
 
 	if (CursorToWorld != nullptr)
 	{
@@ -142,15 +154,13 @@ void AOneWarsCharacter::BeginPlay()
 
 void AOneWarsCharacter::CameraUnlockToggle()
 {
-	static bool cameraUnlock = false;
-	FlipFloop(cameraUnlock);
-	TopDownCameraComponent->SetActive(!cameraUnlock);
-	UnlockedCamera->SetActive(cameraUnlock);
-	if (cameraUnlock)
+	FlipFloop(mCameraLock);
+	TopDownCameraComponent->SetActive(mCameraLock);
+	UnlockedCamera->SetActive(!mCameraLock);
+	if (!mCameraLock)
 	{
 		FVector newLocation = TopDownCameraComponent->GetComponentLocation();
 		UnlockedCamera->SetWorldLocation(newLocation);
-
 	}
 }
 
@@ -175,6 +185,61 @@ void AOneWarsCharacter::ConstructNameplate()
 	{
 		mNameplateComponent->SetWidgetClass(NameplateClass);
 	}
+}
+
+FVector AOneWarsCharacter::GetMouseDirection()
+{
+
+	FVector2D size;
+	auto* viewport = GEngine->GameViewport;
+	viewport->GetViewportSize(size);
+
+	float x = 0.f;
+	float y = 0.f;
+	auto* controller = Cast<AOneWarsPlayerController>(GetController());
+	auto hasMousePos = controller->GetMousePosition(x, y);
+
+	if (!hasMousePos)
+	{
+		return mPreviousMouseDirection;
+	}
+
+	x = FMath::Clamp(x, 0.f, size.X);
+	y = FMath::Clamp(y, 0.f, size.Y);
+
+	
+	float posX = x / size.X;
+	float posY = y / size.Y;
+	FVector direction = FVector::ZeroVector;
+	if (posX > (1 - mScreenScrollPercentage))
+	{
+		direction.X = 1.f;
+	}
+	else if (posX < mScreenScrollPercentage)
+	{
+		direction.X = -1.f;
+	}
+
+	if (posY > (1 - mScreenScrollPercentage))
+	{
+		direction.Y = 1.f;
+	}
+	else if (posY < mScreenScrollPercentage)
+	{
+		direction.Y = -1.f;
+	}
+
+	mPreviousMouseDirection = direction;
+	return direction;
+}
+
+void AOneWarsCharacter::CameraMovement(float deltaSeconds)
+{
+	auto direction = GetMouseDirection();
+	auto cameraWorldLocation = UnlockedCamera->GetComponentLocation();
+	FVector target = cameraWorldLocation + (direction * 100.f);
+	auto newPosition = FMath::VInterpTo(cameraWorldLocation, target, deltaSeconds, mCameraSpeed);
+	UnlockedCamera->SetWorldLocation(newPosition);
 }
 
 bool AOneWarsCharacter::FlipFloop(bool& toBeFlipped)

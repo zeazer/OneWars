@@ -7,6 +7,7 @@
 #include "UI/MenuType.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OneWarsGameInstance.generated.h"
+class UUserWidget;
 /**
  * 
  */

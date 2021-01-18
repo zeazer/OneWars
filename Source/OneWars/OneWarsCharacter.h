@@ -83,7 +83,17 @@ private:
 
 	void ConstructNameplate();
 
+	FVector GetMouseDirection();
+
+	void CameraMovement(float deltaSeconds);
+
 	bool mCameraLock;
+
+	float mCameraSpeed;
+
+	float mScreenScrollPercentage;
+
+	FVector mPreviousMouseDirection;
 
 	bool FlipFloop(bool& toBeFlipped);
 };

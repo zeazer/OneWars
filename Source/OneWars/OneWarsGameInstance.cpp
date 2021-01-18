@@ -10,6 +10,7 @@
 #include "OnlineSessionSettings.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "Blueprint/UserWidget.h"
 
 UOneWarsGameInstance::UOneWarsGameInstance(const FObjectInitializer& ObjectInitializer)
 {
